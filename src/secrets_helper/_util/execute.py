@@ -103,17 +103,23 @@ def _clean_command_arguments(*, args: str) -> List[str]:
     return [shlex.quote(i) for i in shlex.split(args)]
 
 
-def run_command(*, raw_command: str, extra_env_vars: Dict[str, str]) -> subprocess.CompletedProcess:
+def run_command(*, raw_command: str, extra_env_vars: Dict[str, str], direct_env_vars: Dict[str, str]) -> subprocess.CompletedProcess:
     """Run a command with the provided environment variables.
 
     :param str raw_command: Raw command string to execute
-    :param dict extra_env_vars: Environment variables to inject into subprocess environment
+    :param dict extra_env_vars: Environment variables from secrets to inject into subprocess environment
+    :param dict direct_env_vars: Environment variables from direct config to inject into subprocess environment
     :returns: resulting process data
     :rtype: subprocess.CompletedProcess
     """
     env = os.environ.copy()
 
     for key, value in extra_env_vars.items():
+        if key in env:
+            click.secho(f'Environment variable "{key}" will be overwritten in subprocess', fg="red", err=True)
+        env[key] = value
+
+    for key, value in direct_env_vars.items():
         if key in env:
             click.secho(f'Environment variable "{key}" will be overwritten in subprocess', fg="red", err=True)
         env[key] = value

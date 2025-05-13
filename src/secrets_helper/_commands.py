@@ -43,7 +43,7 @@ def _collect_secrets(func):
             environment_mappings=helper_config.environment_mappings, secret_values=secret_values
         )
 
-        return func(secret_env_vars=secret_env_vars, **kwargs)
+        return func(secret_env_vars=secret_env_vars, direct_config_vars=helper_config.direct_env_vars, **kwargs)
 
     return wrapper
 
@@ -57,13 +57,14 @@ def cli():
 @cli.command(context_settings=dict(allow_interspersed_args=False, ignore_unknown_options=True))
 @_collect_secrets
 @click.option("--command", required=True, help="Command to run")
-def run(secret_env_vars: Dict[str, str], command: str):
+def run(secret_env_vars: Dict[str, str], direct_config_vars: Dict[str, str], command: str):
     """Run a command with injected environment variables.
 
     :param dict secret_env_vars: Environment variables containing loaded secret values
+    :param dict direct_config_vars: Environment variables containing direct config
     :param str command: Command to execute
     """
-    result = run_command(raw_command=command, extra_env_vars=secret_env_vars)
+    result = run_command(raw_command=command, extra_env_vars=secret_env_vars, direct_env_vars=direct_config_vars)
 
     if result.stdout:
         click.echo(result.stdout)
