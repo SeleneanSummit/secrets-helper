@@ -11,11 +11,12 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 """Unique identifiers used by secrets-helper."""
-__all__ = ("__version__", "CONFIG_SETTINGS_GROUP", "CONFIG_ENV_GROUP", "KNOWN_CONFIGS")
+__all__ = ("__version__", "CONFIG_SETTINGS_GROUP", "SECRETS_ENV_GROUP", "CONFIG_ENV_GROUP", "KNOWN_CONFIGS")
 __version__ = "0.1.0"
 
 CONFIG_NAME = "secrets-helper"
 CONFIG_SETTINGS_GROUP = f"{CONFIG_NAME}.settings"
+SECRETS_ENV_GROUP = f"{CONFIG_NAME}.secrets"
 CONFIG_ENV_GROUP = f"{CONFIG_NAME}.env"
 KNOWN_CONFIGS = dict(
     twine=dict(username="TWINE_USERNAME", password="TWINE_PASSWORD", url="TWINE_REPOSITORY_URL")  # nosec

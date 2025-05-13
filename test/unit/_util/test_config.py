@@ -58,28 +58,41 @@ def test_mapping_from_profile_names_fail(config_profile, user_profile):
 @pytest.mark.parametrize(
     "name, profile, expected",
     (
-        ("simple", None, HelperConfig(secret_ids=[], environment_mappings=dict(a="VAL_A", b="VAL_B", c="VAL_C"))),
+        ("simple", None, HelperConfig(
+            secret_ids=[],
+            environment_mappings=dict(a="VAL_A", b="VAL_B", c="VAL_C"),
+            direct_env_vars=dict(d="VAL_D", e="VAL_E", f="VAL_F"),
+        )),
         (
             "simple",
             "twine",
             HelperConfig(
-                secret_ids=[], environment_mappings=dict(a="VAL_A", b="VAL_B", c="VAL_C", **KNOWN_CONFIGS["twine"])
+                secret_ids=[],
+                environment_mappings=dict(a="VAL_A", b="VAL_B", c="VAL_C", **KNOWN_CONFIGS["twine"]),
+                direct_env_vars=dict(d="VAL_D", e="VAL_E", f="VAL_F"),
             ),
         ),
         (
             "simple-with-profile",
             None,
             HelperConfig(
-                secret_ids=[], environment_mappings=dict(a="VAL_A", b="VAL_B", c="VAL_C", **KNOWN_CONFIGS["twine"])
+                secret_ids=[],
+                environment_mappings=dict(a="VAL_A", b="VAL_B", c="VAL_C", **KNOWN_CONFIGS["twine"]),
+                direct_env_vars=dict(d="VAL_D", e="VAL_E", f="VAL_F"),
             ),
         ),
-        ("profile-only", None, HelperConfig(secret_ids=[], environment_mappings=KNOWN_CONFIGS["twine"])),
+        ("profile-only", None, HelperConfig(
+            secret_ids=[],
+            environment_mappings=KNOWN_CONFIGS["twine"],
+            direct_env_vars=dict(d="VAL_D", e="VAL_E", f="VAL_F"),
+        )),
         (
             "complex",
             None,
             HelperConfig(
                 secret_ids=["secret-1", "secret-2", "secret-3", "secret-4"],
                 environment_mappings=dict(d="VAL_D", e="VAL_E", f="VAL_F", **KNOWN_CONFIGS["twine"]),
+                direct_env_vars=dict(d="VAL_D", e="VAL_E", f="VAL_F"),
             ),
         ),
     ),

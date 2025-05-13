@@ -18,7 +18,7 @@ from typing import IO, Dict, List, Optional
 
 import click
 
-from ..identifiers import CONFIG_ENV_GROUP, CONFIG_SETTINGS_GROUP, KNOWN_CONFIGS
+from ..identifiers import SECRETS_ENV_GROUP, CONFIG_SETTINGS_GROUP, KNOWN_CONFIGS, CONFIG_ENV_GROUP
 
 __all__ = ("load_config",)
 
@@ -34,6 +34,7 @@ class HelperConfig:
 
     secret_ids: List[str]
     environment_mappings: Dict[str, str]
+    direct_env_vars: Dict[str, str] = None
     profile: Optional[str] = None
 
 
@@ -114,6 +115,7 @@ def _load_config_from_file(*, config_file: IO, profile: Optional[str]) -> Helper
     :raises click.UsageError: if profile name is not known
     """
     parser = configparser.ConfigParser()
+    parser.optionxform = lambda option: option
     parser.read_file(config_file)
 
     # Load secret IDs from config file
@@ -132,14 +134,24 @@ def _load_config_from_file(*, config_file: IO, profile: Optional[str]) -> Helper
 
     # Load config mapping from config
     try:
-        config_map = dict(parser[CONFIG_ENV_GROUP])
+        config_map = dict(parser[SECRETS_ENV_GROUP])
     except KeyError:
         config_map = {}
+
+    # Load direct config from config
+    try:
+        direct_config = dict(parser[CONFIG_ENV_GROUP])
+    except KeyError:
+        direct_config = {}
 
     # Merge config and profile mappings
     environment_mappings = _merge_mappings(config_mapping=config_map, profile_mapping=profile_map)
 
-    return HelperConfig(secret_ids=secret_ids, environment_mappings=environment_mappings)
+    return HelperConfig(
+        secret_ids=secret_ids,
+        environment_mappings=environment_mappings,
+        direct_env_vars=direct_config,
+    )
 
 
 def load_config(*, config: Optional[IO], profile: Optional[str], secret_ids: List[str]) -> HelperConfig:
@@ -155,7 +167,7 @@ def load_config(*, config: Optional[IO], profile: Optional[str], secret_ids: Lis
     if config is not None:
         loaded_config = _load_config_from_file(config_file=config, profile=profile)
     else:
-        loaded_config = HelperConfig(secret_ids=[], environment_mappings={})
+        loaded_config = HelperConfig(secret_ids=[], environment_mappings={}, direct_env_vars={})
 
     if profile is not None:
         profile_env_map = KNOWN_CONFIGS[profile]
@@ -173,4 +185,8 @@ def load_config(*, config: Optional[IO], profile: Optional[str], secret_ids: Lis
     if not all_environment_mappings:
         raise click.UsageError("No environment mappings provided")
 
-    return HelperConfig(secret_ids=all_secret_ids, environment_mappings=all_environment_mappings)
+    return HelperConfig(
+        secret_ids=all_secret_ids,
+        environment_mappings=all_environment_mappings,
+        direct_env_vars=loaded_config.direct_env_vars,
+    )

@@ -76,7 +76,10 @@ def prep_secrets(*, environment_mappings: Dict[str, str], secret_values: Dict[st
     :raises click.UsageError: if secrets contains an identifier that is not in environment_mappings
     """
     try:
-        return {environment_mappings[key]: value for key, value in secret_values.items()}
+        return {
+            key: secret_values[value]
+            for key, value in environment_mappings.items()
+        }
     except KeyError as error:
         missing_key = error.args[0]
         raise click.UsageError(f'Identifier key "{missing_key}" not found in environment variable mapping.')
