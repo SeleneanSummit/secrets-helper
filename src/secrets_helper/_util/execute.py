@@ -103,6 +103,15 @@ def _clean_command_arguments(*, args: str) -> List[str]:
     return [shlex.quote(i) for i in shlex.split(args)]
 
 
+import signal
+import ctypes
+libc = ctypes.CDLL("libc.so.6")
+def set_pdeathsig(sig = signal.SIGKILL):
+    def callable():
+        return libc.prctl(1, sig)
+    return callable
+
+
 def run_command(*, raw_command: str, extra_env_vars: Dict[str, str], direct_env_vars: Dict[str, str]) -> subprocess.CompletedProcess:
     """Run a command with the provided environment variables.
 
@@ -130,4 +139,4 @@ def run_command(*, raw_command: str, extra_env_vars: Dict[str, str], direct_env_
     # Using check=False because we process error cases in the upstream command that calls this function.
     # Using shell=False because we explicitly want to contain this subprocess execution.
     # Bandit is disabled for this line because they rightly will not allow any non-whitelisted calls to subprocess.
-    return subprocess.run(command_args, env=env, check=False, shell=False)  # nosec
+    return subprocess.run(command_args, env=env, check=False, shell=False, preexec_fn = set_pdeathsig(signal.SIGTERM))  # nosec
